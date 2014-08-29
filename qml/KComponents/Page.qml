@@ -12,8 +12,10 @@ Rectangle {
     default property alias children: dragging.children
 
     property bool isDialog: false
+    signal closing;
 
     function closePage() {
+        closing();
         stacking.startFadeOut();
     }
 

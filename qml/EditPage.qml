@@ -13,6 +13,10 @@ Page {
 
     property alias path: editor.path
 
+    onClosing: {
+        notesModel.refresh();
+    }
+
     PageHeader {
         id: header
         title: 'SparkleNotes'
