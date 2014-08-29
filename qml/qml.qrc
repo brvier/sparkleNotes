@@ -1,0 +1,38 @@
+<RCC>
+    <qresource prefix="/">
+        <file>EditPage.qml</file>
+        <file>main.qml</file>
+        <file>SettingsPage.qml</file>
+        <file>KComponents/AboutPage.qml</file>
+        <file>KComponents/Button.qml</file>
+        <file>KComponents/ButtonArea.qml</file>
+        <file>KComponents/ButtonRow.qml</file>
+        <file>KComponents/Confirmation.qml</file>
+        <file>KComponents/ConfirmationButton.qml</file>
+        <file>KComponents/Dialog.qml</file>
+        <file>KComponents/DialogStacking.qml</file>
+        <file>KComponents/Dragging.qml</file>
+        <file>KComponents/Icon.qml</file>
+        <file>KComponents/IconContextMenu.qml</file>
+        <file>KComponents/IconMenuItem.qml</file>
+        <file>KComponents/Label.qml</file>
+        <file>KComponents/NoteItem.qml</file>
+        <file>KComponents/Page.qml</file>
+        <file>KComponents/PageHeader.qml</file>
+        <file>KComponents/Placeholder.qml</file>
+        <file>KComponents/ScrollDecorator.qml</file>
+        <file>KComponents/ScrollListView.qml</file>
+        <file>KComponents/SectionHeader.qml</file>
+        <file>KComponents/SelectionDialog.qml</file>
+        <file>KComponents/Slider.qml</file>
+        <file>KComponents/Stacking.qml</file>
+        <file>KComponents/TextField.qml</file>
+        <file>KComponents/TextInputDialog.qml</file>
+        <file>KComponents/theme.js</file>
+        <file>KComponents/Toolbar.qml</file>
+        <file>KComponents/ToolbarButton.qml</file>
+        <file>KComponents/icons/icons.js</file>
+        <file>KComponents/icons/open-iconic.ttf</file>
+        <file>KComponents/images/pageshadow.png</file>
+    </qresource>
+</RCC>
