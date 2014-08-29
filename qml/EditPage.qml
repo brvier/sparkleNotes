@@ -144,9 +144,6 @@ Page {
             Component.onCompleted: {
                 document.fileUrl = path;
             }
-            /*onPathChanged: {
-                    document.fileUrl = Qt.resolvedUrl("file://"+path);
-            }*/
         }
 
 
@@ -163,8 +160,6 @@ Page {
             onClicked: {
                 closePage();
             }
-
-            //text: 'Plus'
         }
 
         ToolbarButton {
@@ -178,14 +173,6 @@ Page {
                                                console.log('push');
                                            }
                                        },
-                                       /*{
-                                           label: 'Category',
-                                           callback: function () {
-                                               console.log('sategory');
-                                           }
-                                       },*/
-
-
                                    ])
             }
         }

@@ -11,13 +11,6 @@ Window {
     property int dialogsVisible: 0
     default property alias children: listPage.children
 
-    /*onActiveChanged: {
-        if (root.active) {
-            console.log('Refresh model')
-            notesModel.refresh()
-        }
-    }*/
-
     visible: true
     width: 768
     height: 1280
@@ -155,46 +148,6 @@ Window {
         }
         return 'Now';
     }
-
-
-   /* ListModel {
-        id: designModel
-        ListElement {
-            title:"Test 1"
-            category:'Test'
-            timestamp: 'now'
-            path:'none'
-        }
-        ListElement {
-            title:"Test 2"
-            category:'Test'
-            timestamp: '2 minutes ago'
-            path:'none'
-        }
-
-        ListElement {
-            title:"Test 3"
-            category:'Test'
-            timestamp: '3 hours ago'
-            path:'none'
-        }
-
-        ListElement {
-            title:"Test 4"
-            category:'Test'
-            timestamp: '4 hours ago'
-            path:'none'
-        }
-
-
-        ListElement {
-            title:"Sans 1"
-            category:''
-            timestamp: '15 seconds'
-            path:'none'
-        }
-
-    }*/
 
 
     Page {
