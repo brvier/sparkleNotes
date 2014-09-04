@@ -1,20 +1,17 @@
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<?xml version='1.0' encoding='utf-8' standalone='no'?>
 <qnx xmlns="http://www.qnx.com/schemas/application/1.0">
     <id>net.khertan.sparkleNotes</id>
     <name>sparkleNotes</name>
     <versionNumber>0.0.1</versionNumber>
     <description>a markdown note taking application</description>
-    <publisher>Benoît HERVIER</publisher>
     <copyright>Benoît HERVIER</copyright>
-
     <initialWindow>
-        <systemChrome>none</systemChrome>
         <transparent>false</transparent>
         <autoOrients>true</autoOrients>
         <aspectRatio>landscape</aspectRatio>
+        <systemChrome>none</systemChrome>
     </initialWindow>
-
     <action system="true">run_native</action>
-
-    <asset entry="true" path="ComponentsTest" type="Qnx/Elf">sparkleNotes</asset>
+    <author>Benoît HERVIER</author>
+    <asset entry="true" type="Qnx/Elf" path="sparkleNotes">sparkleNotes</asset>
 </qnx>

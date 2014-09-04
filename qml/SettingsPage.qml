@@ -5,7 +5,6 @@ import "KComponents/theme.js" as Theme
 import 'KComponents/icons/icons.js' as Icons
 
 Page {
-    //anchors.fill: parent
     width: parent.width
     height: parent.height
 

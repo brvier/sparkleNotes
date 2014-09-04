@@ -21,3 +21,8 @@ include(deployment.pri)
 
 OTHER_FILES += \
     bar-descriptor.xml
+
+LIBS += -L$$PWD/libgit2-build/ -lgit2
+
+INCLUDEPATH += $$PWD/libgit2/include
+DEPENDPATH += $$PWD/libgit2/include

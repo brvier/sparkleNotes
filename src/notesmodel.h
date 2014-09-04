@@ -10,12 +10,10 @@
 #include <QtCore/QTextCodec>
 
 
-//![0]
 class Note
 {
 public:
     Note(const QString &path);
-    //![0]
 
     QString title() const;
     QString category() const;
@@ -26,12 +24,12 @@ public:
 private:
     QString m_text;
     QString m_path;
-    //![1]
 };
 
 class NotesModel : public QAbstractListModel
 {
     Q_OBJECT
+
 public:
     enum NoteRoles {
         TitleRole = Qt::UserRole + 1,
@@ -41,7 +39,6 @@ public:
     };
 
     NotesModel(QObject *parent = 0);
-//![1]
 
     void addNote(const Note &note);
 
@@ -55,17 +52,23 @@ public:
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
     void sort();
     void loadNotes(QDir m_notesdir);
+    void updateGitStatus();
 
+Q_SIGNALS:
+    void error(QString);
 
 protected:
     QHash<int, QByteArray> roleNames() const;
+    bool checkGitErr(int gerr);
+
 private:
     QList<Note> m_notes;
-//![2]
+    QString createNote();
 };
 
-
 QDir notesFolder();
-QString createNote();
 
-#endif // NOTESMODEL_H
+
+typedef struct { } status_data;
+
+#endif
