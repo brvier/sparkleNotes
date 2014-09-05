@@ -48,8 +48,13 @@ Page {
             TextField {
                 id: addressField
                 width: parent.width - (10 * root.scaleFactor)
-                 x: 5 *  root.scaleFactor
-
+                x: 5 *  root.scaleFactor
+                Component.onCompleted: {
+                    text = settings.get("gitRemoteUrl")
+                }
+                onTextChanged: {
+                    settings.set("gitRemoteUrl", text)
+                }
             }
 
             Label {
@@ -59,7 +64,13 @@ Page {
             TextField {
                 id: remotePathField
                 width: parent.width - (10 * root.scaleFactor)
-                                x: 5 *  root.scaleFactor
+                x: 5 *  root.scaleFactor
+                Component.onCompleted: {
+                    text = settings.get("gitRemotePath")
+                }
+                onTextChanged: {
+                    settings.set("gitRemotePath", text)
+                }
             }
 
             Label {
@@ -70,6 +81,12 @@ Page {
                 id: sshKeyField
                 width: parent.width - (10 * root.scaleFactor)
                 x: 5 *  root.scaleFactor
+                Component.onCompleted: {
+                    text = settings.get("gitKey")
+                }
+                onTextChanged: {
+                    settings.set("gitKey", text)
+                }
             }
 
             Label {
@@ -86,6 +103,10 @@ Page {
                 anchors.rightMargin: 10
                 onValueChangeRequested: {
                     value = newValue
+                    settings.set("fontSize", value)
+                }
+                Component.onCompleted: {
+                    value = settings.get("fontSize")
                 }
 
             }

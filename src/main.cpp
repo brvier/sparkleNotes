@@ -3,6 +3,7 @@
 #include <QQmlContext>
 #include "documenthandler.h"
 #include "notesmodel.h"
+#include "qmlsettings.h"
 #include <QtCore/QSettings>
 
 #include <git2.h>
@@ -17,7 +18,7 @@ int main(int argc, char *argv[])
     NotesModel notesModel;
     notesModel.loadNotes(notesFolder());
 
-    QSettings settings;
+    QMLSettings settings;
 
     QQmlApplicationEngine engine;
     qmlRegisterType<DocumentHandler>("net.khertan.documenthandler", 1, 0, "DocumentHandler");
