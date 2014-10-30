@@ -283,6 +283,7 @@ void DocumentHandler::setFontSize(int arg)
         return;
     QTextCharFormat format;
     format.setFontPointSize(arg);
+
     mergeFormatOnWordOrSelection(format);
     emit fontSizeChanged();
 }

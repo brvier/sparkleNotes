@@ -128,7 +128,7 @@ Page {
             height: Math.max(flicker.height, implicitHeight)
             selectionColor: Theme.colors.select
             onCursorRectangleChanged: flicker.ensureVisible(cursorRectangle)
-            font.pointSize: 16 //* root.scaleFactor//TODO SETTINGS
+            font.pointSize: settings.get("fontSize") //* root.scaleFactor//TODO SETTINGS
             focus: true
 
             DocumentHandler {

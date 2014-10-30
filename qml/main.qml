@@ -15,6 +15,11 @@ Window {
     width: 768
     height: 1280
 
+    Connections {
+        target: notesModel
+        onError: showError('Oups', text)
+    }
+
     FontLoader {
         id: fontLoader
         source: Qt.resolvedUrl("KComponents/icons/open-iconic.ttf")
@@ -56,6 +61,18 @@ Window {
                      description: description,
                      icon: icon,
                      callback: callback,
+                 });
+    }
+
+    //showError("title", "Error message") //Disapear automaticaly after a 20s delay
+    function showError(title, message) {
+        loadPage('KComponents/Confirmation.qml', {
+                     title: title,
+                     affirmativeAction: 'Close',
+                     negativeAction: 'Negatif',
+                     description: message,
+                     icon: Icons.warning,
+                     callback: undefined,
                  });
     }
 

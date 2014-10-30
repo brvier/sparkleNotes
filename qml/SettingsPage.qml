@@ -42,7 +42,7 @@ Page {
             width: flicker.width
 
             Label {
-                text: 'Address'
+                text: 'URL'
             }
 
             TextField {
@@ -57,7 +57,7 @@ Page {
                 }
             }
 
-            Label {
+            /*Label {
                 text: 'Remote Path'
             }
 
@@ -71,7 +71,7 @@ Page {
                 onTextChanged: {
                     settings.set("gitRemotePath", text)
                 }
-            }
+            }*/
 
             Label {
                 text: 'SSH Key'
@@ -82,10 +82,11 @@ Page {
                 width: parent.width - (10 * root.scaleFactor)
                 x: 5 *  root.scaleFactor
                 Component.onCompleted: {
-                    text = settings.get("gitKey")
+                    text = settings.get("keyPath")
                 }
                 onTextChanged: {
-                    settings.set("gitKey", text)
+                    settings.set("keyPath", text)
+                    settings.set("pubKeyPath", text + '.pub')
                 }
             }
 

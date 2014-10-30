@@ -8,7 +8,17 @@
 #include <qqmlfile.h>
 #include <QtGui/QTextCharFormat>
 #include <QtCore/QTextCodec>
+#include <QtConcurrent/QtConcurrent>
+#include "git2.h"
 
+#ifdef UNUSED
+#elif defined(__GNUC__)
+# define UNUSED(x) UNUSED_ ## x __attribute__((unused))
+#elif defined(__LCLINT__)
+# define UNUSED(x) /*@unused@*/ x
+#else
+# define UNUSED(x) x
+#endif
 
 class Note
 {
@@ -53,6 +63,9 @@ public:
     void sort();
     void loadNotes(QDir m_notesdir);
     void updateGitStatus();
+    int pull();
+    int push();
+    void pullMergePush();
 
 Q_SIGNALS:
     void error(QString);
@@ -70,5 +83,12 @@ QDir notesFolder();
 
 
 typedef struct { } status_data;
+
+int cred_acquire_cb(git_cred **out,
+        const char * UNUSED(url),
+        const char * UNUSED(username_from_url),
+        unsigned int UNUSED(allowed_types),
+        void * UNUSED(payload));
+
 
 #endif

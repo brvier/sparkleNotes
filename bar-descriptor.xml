@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8' standalone='no'?>
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <qnx xmlns="http://www.qnx.com/schemas/application/1.0">
     <id>net.khertan.sparkleNotes</id>
     <name>sparkleNotes</name>
@@ -6,12 +6,18 @@
     <description>a markdown note taking application</description>
     <copyright>Benoît HERVIER</copyright>
     <initialWindow>
-        <transparent>false</transparent>
-        <autoOrients>true</autoOrients>
         <aspectRatio>landscape</aspectRatio>
+        <autoOrients>true</autoOrients>
         <systemChrome>none</systemChrome>
+        <transparent>false</transparent>
     </initialWindow>
     <action system="true">run_native</action>
     <author>Benoît HERVIER</author>
-    <asset entry="true" type="Qnx/Elf" path="sparkleNotes">sparkleNotes</asset>
+    <asset path="${BUILD_DIR}/sparkleNotes" entry="true" type="Qnx/Elf">sparkleNotes</asset>
+    <asset path="/home/khertan/Projects/libgit2/libgit2.so.21" type="Qnx/Elf">lib/libgit2.so.21</asset>
+    <asset path="/home/khertan/Projects/libssh2/libssh2.so" type="Qnx/Elf">lib/libssh2.so</asset>
+    <env value="/accounts/devuser/qt/lib:$LD_LIBRARY_PATH:app/native/lib" var="LD_LIBRARY_PATH"/>
+    <env value="/accounts/devuser/qt/qml:$QML2_IMPORT_PATH" var="QML2_IMPORT_PATH"/>
+    <env value="/accounts/devuser/qt/imports:$QML_IMPORT_PATH" var="QML_IMPORT_PATH"/>
+    <env value="/accounts/devuser/qt/plugins:$QT_PLUGIN_PATH" var="QT_PLUGIN_PATH"/>
 </qnx>

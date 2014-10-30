@@ -4,8 +4,14 @@
 #include "QStandardPaths"
 #include "QTextStream"
 #include "QDebug"
-
+#include "QSettings"
 #include "git2.h"
+
+void e(int error) {
+    if (error < 0)
+        throw error;
+}
+
 
 Note::Note(const QString &path)
     : m_path(path)
@@ -33,137 +39,327 @@ QString NotesModel::createNote()
 
 
 
-typedef struct { /* … */ } match_data;
+/* typedef struct {  } match_data;
 int match_cb(const char *path, const char *spec, void *payload)
 {
     match_data *d = (match_data*)payload;
-    /*
-   * return 0 to add/remove this path,
-   * a positive number to skip this path,
-   * or a negative number to abort the operation.
-   */
-}
+
+   // return 0 to add/remove this path,
+   // a positive number to skip this path,
+   // or a negative number to abort the operation.
+
+}*/
 
 bool NotesModel::checkGitErr(int gerr) {
     if (gerr < 0) {
         const git_error *e = giterr_last();
-        qDebug() << "Libgit error : %s\n" << e->message;
-        emit error(QString().fromLatin1(e->message));
-        return true;
+        if (e) {
+            qDebug() << "Libgit error : " << e->message;
+            emit error(QString().fromLatin1(e->message));
+            return true;
+        }
+        else
+        {    return false; }
     }
     return false;
 }
 
-void NotesModel::updateGitStatus() {
+int cred_acquire_cb(git_cred **out,
+                    const char * UNUSED(url),
+                    const char * UNUSED(username_from_url),
+                    unsigned int UNUSED(allowed_types),
+                    void * UNUSED(payload))
+{
+
+    return git_cred_ssh_key_new(out,
+                                UNUSED_username_from_url,
+                                QSettings().value("pubKeyPath").toString().toUtf8().constData(),
+                                QSettings().value("keyPath").toString().toUtf8().constData(),
+                                "");
+}
+
+static int status_cb(
+        const char *ref,
+        const char *msg,
+        void *data)
+{
+    fprintf(stderr, "status ref: %s\t\tmsg: %s\n", ref, msg);
+    return 0;
+}
+
+//BOUHHHHOUUUH
+int NotesModel::push() {
+    git_push *push;
+    git_remote_callbacks callbacks = GIT_REMOTE_CALLBACKS_INIT;
+    git_repository *repo = NULL;
+    git_remote *remote = NULL;
+    git_merge_head *merge_head = NULL;
+
+    try {
+        //Open Repo
+        e(git_repository_open(&repo, notesFolder().absolutePath().toUtf8().constData()));
+        e(git_remote_load(&remote, repo, "upstream"));
+        callbacks.credentials = cred_acquire_cb;
+        e(git_remote_set_callbacks(remote, &callbacks));
+        e(git_remote_connect(remote, GIT_DIRECTION_PUSH));
+        int connected = git_remote_connected(remote);
+        if (connected) {
+            e(git_push_new(&push, remote));
+
+            e(git_push_add_refspec(push, "refs/heads/master:refs/heads/master"));
+            e(git_push_finish(push));
+            e(git_push_unpack_ok(push));
+            e(git_push_status_foreach(push, &status_cb, NULL) < 0);
+
+            git_push_free(push);
+        }
+    }
+    catch (int error) {
+        const git_error *err = giterr_last();
+        if (err != NULL)
+            qDebug() << QString::number(err->klass) + "\t" + QString(err->message);
+        giterr_clear();
+        git_push_free(push);
+        git_remote_free(remote);
+        git_repository_free(repo);
+    }
+    return true;
+
+}
+
+int NotesModel::pull() {
+
+    /*
+    git_repository *repo = NULL;
+    git_strarray   remotes = {0};
+    git_remote *remote = NULL;
+    git_index *idx = NULL;
+
+    git_checkout_options checkout_opts = GIT_CHECKOUT_OPTIONS_INIT;
+    git_clone_options clone_opts = GIT_CLONE_OPTIONS_INIT;*/
 
     git_repository *repo = NULL;
-    int err = git_repository_open(&repo, notesFolder().absolutePath().toUtf8().constData());
-    if (!checkGitErr(err)) {
+    git_remote *remote = NULL;
+    git_merge_head *merge_head = NULL;
 
-        /* Each repository owns an index */
-        git_index *idx = NULL;
-        err = git_repository_index(&idx, repo);
-        if (!checkGitErr(err)) {
+    try {
+        //Open Repo
+        e(git_repository_open(&repo, notesFolder().absolutePath().toUtf8().constData()));
 
-            /* Read index from disk : FIXME Necessary ?*/
-            err = git_index_read(idx, true);
-            if (!checkGitErr(err)) {
-
-                /* Set Option for git status */
-                git_status_options opts = { 1, GIT_STATUS_SHOW_INDEX_AND_WORKDIR,
-                                            GIT_STATUS_OPT_INCLUDE_UNTRACKED |
-                                       //     GIT_STATUS_OPT_INCLUDE_UNMODIFIED |
-                                            GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS };
-                status_data d;
-                git_status_list *statuses = NULL;
-                err = git_status_list_new(&statuses, repo, &opts);
-                if (!checkGitErr(err)) {
-
-                    size_t count = git_status_list_entrycount(statuses);
-                    if (count == 0) {
-                        return; // No modified file, exit
-                    }
-                    for (size_t i=0; i<count; ++i) {
-                        const git_status_entry *entry = git_status_byindex(statuses, i);
-
-                        qDebug() << "path:" << entry->index_to_workdir->new_file.path;
-                        qDebug() << "status_flags:" << entry->index_to_workdir->status;
-
-                        /* For each new file add it to the index */
-                        if ((entry->status & GIT_STATUS_WT_MODIFIED) || (entry->status & GIT_STATUS_WT_RENAMED) || (entry->status & GIT_STATUS_WT_TYPECHANGE) || entry->status == GIT_STATUS_WT_NEW) {
-                            err = git_index_add_bypath(idx, entry->index_to_workdir->new_file.path);
-                            checkGitErr(err);
-                        }
-                        else if (entry->status & GIT_STATUS_WT_DELETED) {
-                            err = git_index_remove_bypath(idx, entry->index_to_workdir->old_file.path);
-                            checkGitErr(err);
-                        }
+        //List repository and add one from Settings if none exists or doesn t have same URI than settings
+        git_strarray   remotes = {0};
+        git_remote_list(&remotes, repo);
+        if (remotes.count >= 1) {
+            for (size_t i = 0; i < remotes.count; i++) {
+                e(git_remote_load(&remote, repo, remotes.strings[i]));
+                qDebug() << git_remote_url(remote);
+                if (QSettings().value("gitRemoteUrl").isValid() && git_remote_url(remote)) {
+                    if (strcmp(git_remote_url(remote),QSettings().value("gitRemoteUrl").toString().toUtf8().constData()) != 0) {
+                        e(git_remote_delete(remote));
+                        e(git_remote_create(&remote, repo, "upstream",
+                                            QSettings().value("gitRemoteUrl").toString().toUtf8().constData()));
+                        e(git_remote_save(remote));
                     }
 
-                    err = git_index_write(idx);
-                    if (!checkGitErr(err)) {
-
-
-                        /* Write the index contents to the ODB as a tree */
-                        git_oid new_tree_id;
-                        err = git_index_write_tree(&new_tree_id, idx);
-                        if (!checkGitErr(err)) {
-
-                            /* Create signature */
-                            git_signature *me = NULL;
-                            err = git_signature_now(&me, "sparkleNotes", "sparklenotes@khertan.net");
-                            if (!checkGitErr(err)) {
-
-                                /* Get tree ref */
-                                git_tree *tree;
-                                err = git_tree_lookup(&tree, repo, &new_tree_id);
-                                if (!checkGitErr(err)) {
-
-                                    /* Get parent commit */
-                                    git_oid parentCommitId;
-                                    git_commit *parent;
-                                    int nparents;
-                                    err = git_reference_name_to_id( &parentCommitId, repo, "HEAD" );
-                                    if (err == -3) {
-                                        nparents = 0;
-                                    }
-                                    else {
-                                        err = git_commit_lookup( &parent, repo, &parentCommitId );
-                                        nparents = 1;
-                                    }
-                                    const git_commit *parents [1] = { parent };
-
-                                    git_oid new_commit_id;
-                                    err = git_commit_create(
-                                                &new_commit_id,
-                                                repo,
-                                                "HEAD",                      /* name of ref to update */
-                                                me,                          /* author */
-                                                me,                          /* committer */
-                                                "UTF-8",                     /* message encoding */
-                                                "Modif on notes",            /* message */
-                                                tree,                        /* root tree */
-                                                nparents,                    /* parent count */
-                                                parents);                    /* parents */
-                                    checkGitErr(err);
-
-
-                                    if(nparents > 0)
-                                        git_commit_free (parent);
-                                    git_checkout_index (repo, idx, NULL);
-                                }
-                            git_signature_free(me);
-                            }
-                        }
-
-                    }
                 }
             }
+        } else if (remotes.count == 0) {
+            e(git_remote_create(&remote, repo, "upstream",
+                                QSettings().value("gitRemoteUrl").toString().toUtf8().constData()));
+            e(git_remote_save(remote));
         }
-        git_index_free(idx);
+
+        e(git_remote_load(&remote, repo, "upstream"));
+
+        git_remote_callbacks callbacks = GIT_REMOTE_CALLBACKS_INIT;
+        callbacks.credentials = cred_acquire_cb;
+        e(git_remote_set_callbacks(remote, &callbacks));
+
+        e(git_remote_connect(remote, GIT_DIRECTION_FETCH));
+        int connected = git_remote_connected(remote);
+        if (connected)
+            e(git_remote_fetch(remote, NULL, NULL));
+
+
+        git_checkout_options checkout_opt = GIT_CHECKOUT_OPTIONS_INIT;
+        checkout_opt.checkout_strategy = GIT_CHECKOUT_FORCE;
+        checkout_opt.file_mode = 0644;
+        git_merge_options merge_opt = GIT_MERGE_OPTIONS_INIT;
+        merge_opt.file_favor = GIT_MERGE_FILE_FAVOR_UNION;
+
+        const git_remote_head **head = NULL;
+        size_t size = 0;
+        e(git_remote_ls(&head, &size, remote));
+        if (size <= 0)
+            e(-1);
+
+        git_oid oid = head[0]->oid;
+
+        e(git_merge_head_from_fetchhead(&merge_head, repo, "master", git_remote_url(remote), &oid));
+        e(git_merge(repo, (const git_merge_head **)(&merge_head), 1, &merge_opt, &checkout_opt));
+
+        //TRY TO COMMIT
+        /* Create signature */
+        git_signature *me = NULL;
+        e(git_signature_now(&me, "sparkleNotes", "sparklenotes@khertan.net"));
+
+        //Tree Lookup
+        git_tree *tree;
+        git_object *tree_obj;
+        e(git_revparse_single(&tree_obj, repo, "HEAD^{tree}"));
+
+        // Get parent commit
+        git_oid parentCommitId;
+        git_commit *parent;
+        git_oid remoteParentCommitId;
+        git_commit *remoteParent;
+        int nparents;
+        int err;
+        e(git_reference_name_to_id( &parentCommitId, repo, "ORIG_HEAD" ));
+        e(git_commit_lookup( &parent, repo, &parentCommitId ));
+        e(git_reference_name_to_id( &remoteParentCommitId, repo, "MERGE_HEAD" ));
+        e(git_commit_lookup( &remoteParent, repo, &remoteParentCommitId ));
+
+        const git_commit *parents [2] = { parent, remoteParent };
+
+        git_oid new_commit_id;
+        e(git_commit_create(
+              &new_commit_id,
+              repo,
+              "HEAD",                      /* name of ref to update */
+              me,                          /* author */
+              me,                          /* committer */
+              "UTF-8",                     /* message encoding */
+              "Modif on notes",            /* message */
+              (git_tree *) tree_obj,                        /* root tree */
+              2,                    /* parent count */
+              parents));                    /* parents */
+
+
+        git_merge_head_free(merge_head);
+        git_remote_free(remote);
+        git_repository_free(repo);
+
     }
 
-    git_repository_free(repo);
+    catch (int error) {
+        const git_error *err = giterr_last();
+        if (err != NULL)
+            qDebug() << QString::number(err->klass) + "\t" + QString(err->message);
+        giterr_clear();
+        git_merge_head_free(merge_head);
+        git_remote_free(remote);
+        git_repository_free(repo);
+    }
+    return true;
+}
+
+
+void NotesModel::updateGitStatus() {
+    git_repository *repo = NULL;
+    git_index *idx = NULL;
+    git_signature *me = NULL;
+
+    try {
+        e(git_repository_open(&repo, notesFolder().absolutePath().toUtf8().constData()));
+
+        /* Each repository owns an index */
+        e(git_repository_index(&idx, repo));
+
+        /* Read index from disk : FIXME Necessary ?*/
+        e(git_index_read(idx, true));
+
+
+        /* Set Option for git status */
+        git_status_options opts = { 1, GIT_STATUS_SHOW_INDEX_AND_WORKDIR,
+                                    GIT_STATUS_OPT_INCLUDE_UNTRACKED |
+                                    //     GIT_STATUS_OPT_INCLUDE_UNMODIFIED |
+                                    GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS };
+        //status_data d;
+        int state = git_repository_state(repo);
+
+        git_status_list *statuses = NULL;
+        e(git_status_list_new(&statuses, repo, &opts));
+
+
+        size_t count = git_status_list_entrycount(statuses);
+        if ((count == 0) && (GIT_REPOSITORY_STATE_MERGE != state)) {
+            return; // No modified file, exit
+        }
+        for (size_t i=0; i<count; ++i) {
+            const git_status_entry *entry = git_status_byindex(statuses, i);
+
+            /* For each new file add it to the index */
+            if ((entry->status & GIT_STATUS_WT_MODIFIED) || (entry->status & GIT_STATUS_WT_RENAMED) || (entry->status & GIT_STATUS_WT_TYPECHANGE) || entry->status == GIT_STATUS_WT_NEW) {
+                e(git_index_add_bypath(idx, entry->index_to_workdir->new_file.path));
+            }
+            else if (entry->status & GIT_STATUS_WT_DELETED) {
+                e(git_index_remove_bypath(idx, entry->index_to_workdir->old_file.path));
+            }
+        }
+
+        e(git_index_write(idx));
+
+
+        /* Write the index contents to the ODB as a tree */
+        git_oid new_tree_id;
+        e(git_index_write_tree(&new_tree_id, idx));
+
+        /* Create signature */
+        e(git_signature_now(&me, "sparkleNotes", "sparklenotes@khertan.net"));
+
+
+        /* Get tree ref */
+        git_tree *tree;
+        e(git_tree_lookup(&tree, repo, &new_tree_id));
+
+        /* Get parent commit */
+        git_oid parentCommitId;
+        git_commit *parent;
+        int nparents;
+        int err;
+        err = git_reference_name_to_id( &parentCommitId, repo, "HEAD" );
+        if (err == -3) {
+            nparents = 0;
+        }
+        else {
+            e(git_commit_lookup( &parent, repo, &parentCommitId ));
+            nparents = 1;
+        }
+        const git_commit *parents [1] = { parent };
+
+        git_oid new_commit_id;
+        e(git_commit_create(
+              &new_commit_id,
+              repo,
+              "HEAD",                      /* name of ref to update */
+              me,                          /* author */
+              me,                          /* committer */
+              "UTF-8",                     /* message encoding */
+              "Modif on notes",            /* message */
+              tree,                        /* root tree */
+              nparents,                    /* parent count */
+              parents));                    /* parents */
+
+
+        if(nparents > 0)
+            git_commit_free (parent);
+        git_checkout_index (repo, idx, NULL);
+        git_signature_free(me);
+        git_index_free(idx);
+        git_repository_free(repo);
+    }
+        catch (int error) {
+            const git_error *err = giterr_last();
+            if (err != NULL)
+                qDebug() << QString::number(err->klass) + "\t" + QString(err->message);
+            giterr_clear();
+            git_signature_free(me);
+            git_index_free(idx);
+            git_repository_free(repo);
+        }
+
+
 }
 
 
@@ -183,16 +379,51 @@ NotesModel::NotesModel(QObject *parent)
             qDebug() << "Libgit error : %s\n" << e->message;
             emit error(QString().fromLatin1(e->message));
         }
+
+        //Create Initial Commit
+        git_signature *sig;
+        git_index *index;
+        git_oid tree_id, commit_id;
+        git_tree *tree;
+
+        gerr = git_signature_now(&sig, "sparkleNotes", "sparklenotes@khertan.net");
+
+        gerr = git_repository_index(&index, repo);
+        if (!checkGitErr(gerr)) {
+            gerr = git_index_write_tree(&tree_id, index);
+            if (!checkGitErr(gerr)) {
+
+                git_index_free(index);
+
+                gerr = git_tree_lookup(&tree, repo, &tree_id);
+                if (!checkGitErr(gerr)) {
+
+                    gerr = git_commit_create_v(
+                                &commit_id, repo, "HEAD", sig, sig,
+                                NULL, "Initial commit", tree, 0);
+                }
+                git_tree_free(tree);
+            }
+        }
+        git_signature_free(sig);
         git_repository_free(repo);
 
     }
 
     // Add already existing files in case created outside sparkleNotes
     updateGitStatus();
-
+    QtConcurrent::run(this, &NotesModel::pullMergePush);
 
 }
 
+void NotesModel::pullMergePush() {
+    // Pull Merge
+    pull();
+
+    // Push
+    push();
+
+}
 
 QString Note::title() const
 {
@@ -252,6 +483,8 @@ void NotesModel::sort() {
 }
 
 void NotesModel::refresh() {
+    updateGitStatus();
+    QtConcurrent::run(this, &NotesModel::pullMergePush);
     beginResetModel();
     m_notes.clear();
     loadNotes(notesFolder());
