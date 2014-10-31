@@ -220,6 +220,14 @@ int NotesModel::pull() {
         e(git_reference_name_to_id( &remoteParentCommitId, repo, "MERGE_HEAD" ));
         e(git_commit_lookup( &remoteParent, repo, &remoteParentCommitId ));
 
+        if (remoteParent == parent) {
+            //Same commit ... nothing to merge
+            e(git_repository_state_cleanup(repo));
+            git_merge_head_free(merge_head);
+            git_remote_free(remote);
+            git_repository_free(repo);
+            return false;
+        }
         const git_commit *parents [2] = { parent, remoteParent };
 
         git_oid new_commit_id;
@@ -230,7 +238,7 @@ int NotesModel::pull() {
               me,                          /* author */
               me,                          /* committer */
               "UTF-8",                     /* message encoding */
-              "Modif on notes",            /* message */
+              "Merge remote upstream/master",            /* message */
               (git_tree *) tree_obj,                        /* root tree */
               2,                    /* parent count */
               parents));                    /* parents */
@@ -238,6 +246,9 @@ int NotesModel::pull() {
 
         git_merge_head_free(merge_head);
         git_remote_free(remote);
+
+        e(git_repository_state_cleanup(repo));
+
         git_repository_free(repo);
 
     }
