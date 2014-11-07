@@ -7,6 +7,7 @@
 #include "QSettings"
 #include "git2.h"
 
+
 void e(int error) {
     if (error < 0)
         throw error;
@@ -16,6 +17,11 @@ void e(int error) {
 Note::Note(const QString &path)
     : m_path(path)
 {
+}
+
+QStringList NotesModel::categoryList()
+{
+    return m_categories;
 }
 
 QString NotesModel::createNote()
@@ -29,7 +35,7 @@ QString NotesModel::createNote()
     QFile fnote(path + " " + QString::number(idx) + ".md");
     if (fnote.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream stream(&fnote);
-        stream << "Untitled";
+        stream << "Untitled " + QString::number(idx);
     }
     else{
         return QString();
@@ -119,7 +125,7 @@ int NotesModel::push() {
         if (err != NULL)
             qDebug() << QString::number(err->klass) + "\t" + QString(err->message);
         giterr_clear();
-        git_push_free(push);
+        //git_push_free(push);
         git_remote_free(remote);
         git_repository_free(repo);
     }
@@ -128,15 +134,6 @@ int NotesModel::push() {
 }
 
 int NotesModel::pull() {
-
-    /*
-    git_repository *repo = NULL;
-    git_strarray   remotes = {0};
-    git_remote *remote = NULL;
-    git_index *idx = NULL;
-
-    git_checkout_options checkout_opts = GIT_CHECKOUT_OPTIONS_INIT;
-    git_clone_options clone_opts = GIT_CLONE_OPTIONS_INIT;*/
 
     git_repository *repo = NULL;
     git_remote *remote = NULL;
@@ -377,6 +374,9 @@ void NotesModel::updateGitStatus() {
 NotesModel::NotesModel(QObject *parent)
     : QAbstractListModel(parent)
 {
+    m_categories=QStringList(QString("All"));
+    m_filter=QString("All");
+
     QDir notesdir = notesFolder();
 
     if (!(git_repository_open_ext(
@@ -427,6 +427,11 @@ NotesModel::NotesModel(QObject *parent)
 
 }
 
+QString appendPath(const QString& path1, const QString& path2)
+{
+    return QDir::cleanPath(path1 + QDir::separator() + path2);
+}
+
 void NotesModel::pullMergePush() {
     // Pull Merge
     pull();
@@ -438,8 +443,6 @@ void NotesModel::pullMergePush() {
 
 QString Note::title() const
 {
-    //qDebug() << QString(m_path);
-    //qDebug() << QString(QFileInfo(m_path).baseName());
     return QFileInfo(m_path).baseName();
 }
 
@@ -449,6 +452,22 @@ QString Note::category() const
     if (cat == notesFolder().dirName())
         return "";
     return cat;
+}
+
+QString Note::setCategory(QString cat) const
+{
+    QString new_cat_path = appendPath(notesFolder().absolutePath(), cat);
+    QString new_file_path = appendPath(new_cat_path,
+                                       QFileInfo(m_path).fileName());
+
+    QDir new_cat_dir(new_cat_path);
+    if (!new_cat_dir.exists())
+        new_cat_dir.mkpath(new_cat_path);
+
+    QFile tomove(m_path);
+    tomove.rename(new_file_path);
+
+    return new_file_path;
 }
 
 uint Note::datetime() const
@@ -462,12 +481,33 @@ QString Note::path() const
     return m_path;
 }
 
+QString NotesModel::setCategory(const QString &path, const QString &category)  {
+    Note note(path);
+    qDebug() << "NotesModel2::setCategory";
+    qDebug() << path;
+    QString newPath(note.setCategory(category));
+    this->refresh(true);
+    return newPath;
+}
+
+bool NotesModel::deleteNote(const QString &path)  {
+    qDebug() << "NotesModel::deleteNote";
+    bool ret = QFile(path).remove();
+    this->refresh(true);
+    return ret;
+}
 
 void NotesModel::addNote(const Note &note)
-{
-    beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    m_notes << note;
-    endInsertRows();
+{   
+    if (!m_categories.contains(note.category()) && (!note.category().isEmpty())) {
+        m_categories.append(note.category());
+    }
+
+    if ((m_filter == "All") || (m_filter == note.category())) {
+        beginInsertRows(QModelIndex(), rowCount(), rowCount());
+        m_notes << note;
+        endInsertRows();
+    }
 }
 
 QDir notesFolder() {
@@ -493,13 +533,19 @@ void NotesModel::sort() {
     endResetModel();
 }
 
-void NotesModel::refresh() {
-    updateGitStatus();
-    QtConcurrent::run(this, &NotesModel::pullMergePush);
+void NotesModel::refresh(const bool full) {
+    if (full) {
+        updateGitStatus();
+        QtConcurrent::run(this, &NotesModel::pullMergePush);
+    }
     beginResetModel();
     m_notes.clear();
     loadNotes(notesFolder());
     endResetModel();
+}
+
+void NotesModel::setFilter(const QString &filter) {
+    m_filter = filter;
 }
 
 void NotesModel::loadNotes(QDir notesdir) {

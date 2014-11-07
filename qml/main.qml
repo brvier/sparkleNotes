@@ -98,6 +98,46 @@ Window {
                  });
     }
 
+    function setCategoryDialog(path, category) {
+        Qt.inputMethod.hide();
+
+        loadPage('KComponents/TextInputDialog.qml', {
+                     title: 'Set category',
+                     placeholderText: category,
+                     text: category,
+                     buttonText: 'Set category',
+                     callbackOptions: [path],
+                     callback: function (new_category, options) {
+                         console.log('QML2:'+new_category+', ' + options[0]);
+                         notesModel.setCategory(options[0], new_category);
+                     },
+                     path:path
+                 });
+    }
+
+    function filterByCategory(cat) {
+        notesModel.setFilter(cat);
+        notesModel.refresh(false);
+    }
+
+    function showCategoriesList() {
+        var categories = notesModel.categoryList();
+        loadPage('KComponents/SelectionDialog.qml', {
+                     title: 'Categories',
+                     callback: function (idx, item) {
+                         console.log(idx, item);
+                         filterByCategory(item); },
+                     items: function() {
+                         var result = [];
+                         for (var i in categories) {
+                             result.push(categories[i]);
+                         }
+                         return result;
+                     }(),
+                     selectedIndex: 0, //selectedIndex,
+                 });
+
+    }
 
     function loadPage(filename, properties) {
         if (root.loadPageInProgress) {
@@ -224,13 +264,22 @@ Window {
                                            {
                                                label: 'Delete',
                                                callback: function () {
-                                                   console.log('Delete :'+path)
-                                               }
-                                           } ,
+                                                   showConfirmation('Delete',
+                                                                    'Yes',
+                                                                    'No',
+                                                                    'Are you sure you want to delete \'' + title +'\'',
+                                                                    Icons.warning,
+                                                                    function() {
+                                                                        console.log('Delete :'+path);
+                                                                        notesModel.deleteNote(path);}
+                                                                    )}
+
+                                           },
                                            {
                                                label: 'Category',
                                                callback: function () {
-                                                   console.log('Delete :'+path)
+                                                   console.log('Set category :'+path);
+                                                   setCategoryDialog(path, category);
                                                }
                                            },
                                        ], title);
@@ -246,6 +295,9 @@ Window {
                 id:catTool
                 icon: Icons.list
                 //text: 'Plus'
+                onClicked: {
+                    showCategoriesList();
+                }
             }
 
             ToolbarButton {

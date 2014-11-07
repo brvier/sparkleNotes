@@ -29,12 +29,18 @@ Item {
             right: clipboardIcon.left
             margins: 5 * root.scaleFactor
         }
-        color: Theme.colors.text
-        selectionColor: Theme.colors.background
+        //color: Theme.colors.text
+        //selectionColor: Theme.colors.background
+
         font.pixelSize: parent.height * 0.7
         font.family: placeholder.font.family
         focus: true
         onAccepted: textField.accepted()
+        inputMethodHints: TextInput.Normal
+        onTextChanged: {
+            console.log(input.text)
+        }
+
     }
 
     Label {

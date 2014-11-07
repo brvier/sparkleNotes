@@ -90,6 +90,14 @@ Page {
                 }
             }
 
+            Button {
+                text: 'Generate New SSH Key'
+                onClicked: {
+                    console.log('TODO Generate new key')
+                }
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+
             Label {
                 text: 'Font Size'
             }
@@ -111,6 +119,8 @@ Page {
                 }
 
             }
+
+
 
         }
 

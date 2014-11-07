@@ -14,7 +14,7 @@ Page {
     property alias path: editor.path
 
     onClosing: {
-        notesModel.refresh();
+        notesModel.refresh(true);
     }
 
     PageHeader {

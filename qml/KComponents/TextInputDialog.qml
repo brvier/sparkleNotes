@@ -10,6 +10,7 @@ Dialog {
     property string text
     property bool pasteOnLoad: false
     property var callback
+    property var callbackOptions
 
     contentHeight: contentColumn.height
 
@@ -20,7 +21,8 @@ Dialog {
     }
 
     function accept() {
-        textInputDialog.callback(input.text);
+        console.log('TextInputDialo:'+input.text)
+        textInputDialog.callback(input.text, callbackOptions);
         textInputDialog.closePage();
     }
 
@@ -43,7 +45,7 @@ Dialog {
             width: input.width
             height: input.height
 
-            PLabel {
+            Label {
                 anchors.centerIn: parent
                 text: textInputDialog.buttonText
             }

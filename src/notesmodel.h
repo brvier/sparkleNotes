@@ -10,6 +10,7 @@
 #include <QtCore/QTextCodec>
 #include <QtConcurrent/QtConcurrent>
 #include "git2.h"
+#include <QtNetwork/QUdpSocket>
 
 #ifdef UNUSED
 #elif defined(__GNUC__)
@@ -30,6 +31,7 @@ public:
     uint datetime() const;
     QString text() const;
     QString path() const;
+    QString setCategory(QString cat) const;
 
 private:
     QString m_text;
@@ -54,8 +56,11 @@ public:
 
     Q_INVOKABLE QString create(void) ;
     Q_INVOKABLE QString readNote(const QString &path) const;
-
-    Q_INVOKABLE void refresh(void);
+    Q_INVOKABLE QString setCategory(const QString &path, const QString &category) ;
+    Q_INVOKABLE void refresh(const bool full);
+    Q_INVOKABLE bool deleteNote(const QString &path);
+    Q_INVOKABLE QStringList categoryList();
+    Q_INVOKABLE void setFilter(const QString &filter);
 
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
 
@@ -76,11 +81,13 @@ protected:
 
 private:
     QList<Note> m_notes;
+    QStringList m_categories;
+    QString m_filter;
     QString createNote();
 };
 
 QDir notesFolder();
-
+QString appendPath(const QString& path1, const QString& path2);
 
 typedef struct { } status_data;
 

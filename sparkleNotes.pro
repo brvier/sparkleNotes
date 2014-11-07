@@ -1,6 +1,7 @@
 TEMPLATE = app
 
 QT += qml quick
+QT += network
 
 HEADERS += src/documenthandler.h \
     src/highlighter.h \
