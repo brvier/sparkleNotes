@@ -128,7 +128,7 @@ Page {
             height: Math.max(flicker.height, implicitHeight)
             selectionColor: Theme.colors.select
             onCursorRectangleChanged: flicker.ensureVisible(cursorRectangle)
-            font.pointSize: settings.get("fontSize") //* root.scaleFactor//TODO SETTINGS
+            font.pointSize: (settings.get("fontSize") ?  settings.get("fontSize") : 9.0) //* root.scaleFactor//TODO SETTINGS
             focus: true
 
             DocumentHandler {
@@ -138,7 +138,11 @@ Page {
                 selectionStart: editor.selectionStart
                 selectionEnd: editor.selectionEnd
                 Component.onCompleted: {
-                    setStyle('#000', Theme.colors.fresh, Theme.colors.highlight, Theme.colors.select, 16);
+                    setStyle('#000',
+                             Theme.colors.fresh,
+                             Theme.colors.highlight,
+                             Theme.colors.select,
+                             (settings.get("fontSize") ?  settings.get("fontSize") : 9.0));
                 }
             }
             Component.onCompleted: {

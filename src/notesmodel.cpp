@@ -44,18 +44,6 @@ QString NotesModel::createNote()
 }
 
 
-
-/* typedef struct {  } match_data;
-int match_cb(const char *path, const char *spec, void *payload)
-{
-    match_data *d = (match_data*)payload;
-
-   // return 0 to add/remove this path,
-   // a positive number to skip this path,
-   // or a negative number to abort the operation.
-
-}*/
-
 bool NotesModel::checkGitErr(int gerr) {
     if (gerr < 0) {
         const git_error *e = giterr_last();
@@ -76,30 +64,37 @@ int cred_acquire_cb(git_cred **out,
                     unsigned int UNUSED(allowed_types),
                     void * UNUSED(payload))
 {
-
     return git_cred_ssh_key_new(out,
                                 UNUSED_username_from_url,
-                                QSettings().value("pubKeyPath").toString().toUtf8().constData(),
-                                QSettings().value("keyPath").toString().toUtf8().constData(),
+                                QString(QSettings().fileName()
+                                        +".key.pub").toUtf8().constData(),
+                                QString(QSettings().fileName()
+                                        +".key").toUtf8().constData(),
                                 "");
 }
 
 static int status_cb(
         const char *ref,
         const char *msg,
-        void *data)
+        void * UNUSED(data))
 {
     fprintf(stderr, "status ref: %s\t\tmsg: %s\n", ref, msg);
     return 0;
 }
 
-//BOUHHHHOUUUH
+
 int NotesModel::push() {
     git_push *push;
     git_remote_callbacks callbacks = GIT_REMOTE_CALLBACKS_INIT;
     git_repository *repo = NULL;
     git_remote *remote = NULL;
-    git_merge_head *merge_head = NULL;
+
+
+    if (!QSettings().value("gitRemoteUrl").isValid())
+        return false;
+
+    if (QSettings().value("gitRemoteUrl") == "")
+        return false;
 
     try {
         //Open Repo
@@ -125,7 +120,6 @@ int NotesModel::push() {
         if (err != NULL)
             qDebug() << QString::number(err->klass) + "\t" + QString(err->message);
         giterr_clear();
-        //git_push_free(push);
         git_remote_free(remote);
         git_repository_free(repo);
     }
@@ -138,6 +132,12 @@ int NotesModel::pull() {
     git_repository *repo = NULL;
     git_remote *remote = NULL;
     git_merge_head *merge_head = NULL;
+
+    if (!QSettings().value("gitRemoteUrl").isValid())
+        return false;
+
+    if (QSettings().value("gitRemoteUrl") == "")
+        return false;
 
     try {
         //Open Repo
@@ -201,7 +201,6 @@ int NotesModel::pull() {
         e(git_signature_now(&me, "sparkleNotes", "sparklenotes@khertan.net"));
 
         //Tree Lookup
-        git_tree *tree;
         git_object *tree_obj;
         e(git_revparse_single(&tree_obj, repo, "HEAD^{tree}"));
 
@@ -210,8 +209,6 @@ int NotesModel::pull() {
         git_commit *parent;
         git_oid remoteParentCommitId;
         git_commit *remoteParent;
-        int nparents;
-        int err;
         e(git_reference_name_to_id( &parentCommitId, repo, "ORIG_HEAD" ));
         e(git_commit_lookup( &parent, repo, &parentCommitId ));
         e(git_reference_name_to_id( &remoteParentCommitId, repo, "MERGE_HEAD" ));
@@ -231,14 +228,14 @@ int NotesModel::pull() {
         e(git_commit_create(
               &new_commit_id,
               repo,
-              "HEAD",                      /* name of ref to update */
-              me,                          /* author */
-              me,                          /* committer */
-              "UTF-8",                     /* message encoding */
-              "Merge remote upstream/master",            /* message */
-              (git_tree *) tree_obj,                        /* root tree */
-              2,                    /* parent count */
-              parents));                    /* parents */
+              "HEAD",                           /* name of ref to update */
+              me,                               /* author */
+              me,                               /* committer */
+              "UTF-8",                          /* message encoding */
+              "Merge remote upstream/master",   /* message */
+              (git_tree *) tree_obj,            /* root tree */
+              2,                                /* parent count */
+              parents));                        /* parents */
 
 
         git_merge_head_free(merge_head);
@@ -357,15 +354,15 @@ void NotesModel::updateGitStatus() {
         git_index_free(idx);
         git_repository_free(repo);
     }
-        catch (int error) {
-            const git_error *err = giterr_last();
-            if (err != NULL)
-                qDebug() << QString::number(err->klass) + "\t" + QString(err->message);
-            giterr_clear();
-            git_signature_free(me);
-            git_index_free(idx);
-            git_repository_free(repo);
-        }
+    catch (int error) {
+        const git_error *err = giterr_last();
+        if (err != NULL)
+            qDebug() << QString::number(err->klass) + "\t" + QString(err->message);
+        giterr_clear();
+        git_signature_free(me);
+        git_index_free(idx);
+        git_repository_free(repo);
+    }
 
 
 }
@@ -424,7 +421,6 @@ NotesModel::NotesModel(QObject *parent)
     // Add already existing files in case created outside sparkleNotes
     updateGitStatus();
     QtConcurrent::run(this, &NotesModel::pullMergePush);
-
 }
 
 QString appendPath(const QString& path1, const QString& path2)
@@ -477,14 +473,12 @@ uint Note::datetime() const
 
 QString Note::path() const
 {
-    //qDebug() << "path:" << m_path;
     return m_path;
 }
 
 QString NotesModel::setCategory(const QString &path, const QString &category)  {
     Note note(path);
-    qDebug() << "NotesModel2::setCategory";
-    qDebug() << path;
+    qDebug() << "NotesModel2::setCategory" << path;
     QString newPath(note.setCategory(category));
     this->refresh(true);
     return newPath;
@@ -570,7 +564,7 @@ QString NotesModel::create() {
     return path;
 }
 
-int NotesModel::rowCount(const QModelIndex & parent) const {
+int NotesModel::rowCount(const QModelIndex & UNUSED(parent)) const {
     return m_notes.count();
 }
 

@@ -14,7 +14,7 @@ Window {
     visible: true
     width: 768
     height: 1280
-
+    color: '#000000'
     Connections {
         target: notesModel
         onError: showError('Oups', text)
@@ -49,7 +49,6 @@ Window {
             children[index-1].opacity = x / width;
         }
 
-        //children[index-1].pushPhase = x / width;
     }
 
     //showConfirmation("Are you sure ?", "Yes", "No", "Click on yes will close that dialog, and confirm that you are sure.")
@@ -157,6 +156,7 @@ Window {
 
         root.loadPageInProgress = true;
         component.createObject(root, properties);
+
     }
 
     function milisecondsToString(miliseconds) {
@@ -211,7 +211,6 @@ Window {
         id: listPage
         anchors.fill: parent
         width: parent.width
-
 
         PageHeader {
             id: header

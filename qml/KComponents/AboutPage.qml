@@ -53,7 +53,7 @@ Page {
                     font.pixelSize: 30 * root.scaleFactor
                     anchors.horizontalCenter: parent.horizontalCenter
                     wrapMode: Text.WordWrap
-                    text: 'SparkleNotes ' + '0.0.0' /// __VERSION__
+                    text: 'SparkleNotes ' + __version__
                     color: Theme.colors.highlight
                 }
 

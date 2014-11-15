@@ -32,13 +32,13 @@ Item {
         //color: Theme.colors.text
         //selectionColor: Theme.colors.background
 
-        font.pixelSize: parent.height * 0.7
+        font.pixelSize: parent.height * 0.6
         font.family: placeholder.font.family
         focus: true
         onAccepted: textField.accepted()
         inputMethodHints: TextInput.Normal
         onTextChanged: {
-            console.log(input.text)
+            console.log(textInput.text)
         }
 
     }
@@ -52,7 +52,7 @@ Item {
         font.pixelSize: textInput.font.pixelSize
     }
 
-    IconMenuItem {
+    Icon {
         id: clipboardIcon
 
         anchors {
@@ -60,8 +60,13 @@ Item {
             margins: 5 * root.scaleFactor
             verticalCenter: parent.verticalCenter
         }
-
+        color: Theme.colors.secondaryHighlight
         icon: Icons.paperclip
+        size: textInput.font.pixelSize - (10 * root.scaleFactor)
+
+        MouseArea {
+            anchors.fill: parent
+
         onClicked: {
             root.showSelection([
                 {
@@ -95,6 +100,8 @@ Item {
                     }
                 }
             ]);
+        }
+
         }
     }
 }

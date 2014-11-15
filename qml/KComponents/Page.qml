@@ -17,7 +17,7 @@ Rectangle {
     function closePage() {
         closing();
         stacking.startFadeOut();
-    }
+    }    
 
     onXChanged: root.update(page, x)
 

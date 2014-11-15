@@ -37,12 +37,17 @@ Page {
             right: parent.right
         }
         clip: true
+        contentHeight: childrenRect.height + (20 * root.scaleFactor)
 
         Column {
+            onHeightChanged: {
+                flicker.contentHeight = height + (20 * root.scaleFactor)
+            }
+
             width: flicker.width
 
             Label {
-                text: 'URL'
+                text: 'Git Remote URL/Path'
             }
 
             TextField {
@@ -50,52 +55,75 @@ Page {
                 width: parent.width - (10 * root.scaleFactor)
                 x: 5 *  root.scaleFactor
                 Component.onCompleted: {
-                    text = settings.get("gitRemoteUrl")
+                    text = (settings.get("gitRemoteUrl") ?  settings.get("gitRemoteUrl") : "")
                 }
                 onTextChanged: {
                     settings.set("gitRemoteUrl", text)
                 }
             }
 
-            /*Label {
-                text: 'Remote Path'
-            }
 
-            TextField {
-                id: remotePathField
-                width: parent.width - (10 * root.scaleFactor)
-                x: 5 *  root.scaleFactor
-                Component.onCompleted: {
-                    text = settings.get("gitRemotePath")
-                }
-                onTextChanged: {
-                    settings.set("gitRemotePath", text)
-                }
-            }*/
-
-            Label {
-                text: 'SSH Key'
-            }
-
-            TextField {
-                id: sshKeyField
-                width: parent.width - (10 * root.scaleFactor)
-                x: 5 *  root.scaleFactor
-                Component.onCompleted: {
-                    text = settings.get("keyPath")
-                }
-                onTextChanged: {
-                    settings.set("keyPath", text)
-                    settings.set("pubKeyPath", text + '.pub')
-                }
+            Item {
+                height:20* root.scaleFactor
+                width: parent.width - (20 * root.scaleFactor)
             }
 
             Button {
                 text: 'Generate New SSH Key'
+                x: 5 *  root.scaleFactor
                 onClicked: {
-                    console.log('TODO Generate new key')
+                    console.log('Generating new key')
+                    //console.log(settings.keygen());
+                    showConfirmation('Generate New Key',
+                                     'Yes',
+                                     'No',
+                                     'Are you sure you want to generate a new SSH Key ?',
+                                     Icons.warning,
+                                     function() {
+                                         console.log('Generate New SSH Key');
+                                         settings.keygen();}
+                                     )
                 }
                 anchors.horizontalCenter: parent.horizontalCenter
+                width: parent.width - (20 * root.scaleFactor)
+                height: 60 * root.scaleFactor
+            }
+
+            Item {
+                height:20* root.scaleFactor
+                width: parent.width - (20 * root.scaleFactor)
+            }
+
+            Label {
+                text: 'Client ID'
+            }
+
+            TextInput {
+                text: settings.readPubKey()
+                x: 5 *  root.scaleFactor
+                width: parent.width - (20 * root.scaleFactor)
+                wrapMode: TextInput.WrapAnywhere
+                readOnly: true
+            }
+
+            Item {
+                height:20* root.scaleFactor
+                width: parent.width - (20 * root.scaleFactor)
+            }
+
+            Button {
+                text: 'Copy to clipboard'
+                onClicked: {
+                    console.log('TODO Copy to clipboard')
+                }
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: parent.width - (20 * root.scaleFactor)
+                height: 60 * root.scaleFactor
+            }
+
+            Item {
+                height:20* root.scaleFactor
+                width: parent.width - (20 * root.scaleFactor)
             }
 
             Label {
@@ -104,7 +132,7 @@ Page {
 
             Slider {
                 min:1
-                max:128
+                max:36
                 value:9
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -115,11 +143,10 @@ Page {
                     settings.set("fontSize", value)
                 }
                 Component.onCompleted: {
-                    value = settings.get("fontSize")
+                    value = (settings.get("fontSize") ?  settings.get("fontSize") : 9.0)
                 }
 
             }
-
 
 
         }
@@ -145,3 +172,6 @@ Page {
 
 
 }
+
+
+
