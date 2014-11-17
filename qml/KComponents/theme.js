@@ -5,29 +5,29 @@ destructive: '#333366', /* destructive actions */
 page: '#fff',
 
 
-toolbar: '#aaa',
+toolbar: '#F0F0F0',
 toolbarText: '#000',
 
-dialog: '#eee', //'#dddddd',
+dialog: '#f0f0f0', //'#e6e6e6',
 dialogBackground: '#aa000000',
-dialogText: '#111', //'#333333',
-dialogHeader: '#577985',
-dialogHeaderText: '#fff',
-dialogHighlight: '#433b67',
+dialogText: '#000', //'#333333',
+dialogHeader: '#e6e6e6',
+dialogHeaderText: '#0092cc',
+dialogHighlight: '#087099',
 
 selectionDialog: '#333', //'#dddddd',
-selectionDialogBackground: '#aa000000',
+selectionDialogBackground: '#000000',
 selectionDialogText: '#fff', //'#333333',
 selectionDialogHeader: '#576285',
 selectionDialogHighlight: '#fff',
 
 text: '#333', /* text color */
 textondark: '#fff',
-highlight: '#433b67',
-secondaryHighlight: '#605885',
+highlight: '#0092CC',
+secondaryHighlight: '#087099',
 area: '#999',
 dialogArea: '#d0d0d0',
-toolbarArea: '#bbbbbb',
+toolbarArea: '#f0f0f0',
 placeholder: '#666666',
 
 background: '#948db3',

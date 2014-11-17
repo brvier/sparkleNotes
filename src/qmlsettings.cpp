@@ -47,8 +47,23 @@ bool QMLSettings::keygen() {
         QFile(keyPath).remove();
     }
     QProcess process;
-    process.start("/usr/bin/ssh-keygen", QStringList() << "-t" << "rsa" << "-N" << "" << "-f" << keyPath);
+    process.start("/bin/uname", QProcess::ReadOnly);
+    process.waitForFinished(1000);
+//    qDebug() << "test:" << process.readAllStandardOutput().constData();
+//    qDebug() << process.exitCode();
+    QByteArray res = process.readAllStandardOutput();
+
+    if ( res.endsWith("QNX\n")) {
+        //process.start("/apps/net.khertan.sparkleNotes/native/bin/ssh-keygen", QStringList() << "-t" << "rsa" << "-N" << "" << "-f" << keyPath, QProcess::ReadOnly);
+        process.start("app/native/bin/ssh-keygen", QStringList() << "-t" << "rsa" << "-N" << "" << "-f" << keyPath, QProcess::ReadOnly);
+    }
+    else {
+        process.start("/usr/bin/ssh-keygen", QStringList() << "-t" << "rsa" << "-N" << "" << "-f" << keyPath, QProcess::ReadOnly);
+    }
     process.waitForFinished(30000);
+    qDebug() << process.exitCode();
+    qDebug() << "ssh-keygen out:" << process.readAllStandardOutput() << process.readAllStandardError();
+
     if(process.error()) {
         qDebug() << "ssh-keygen out:" << process.readAllStandardOutput() << process.readAllStandardError();
         return false;

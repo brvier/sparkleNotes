@@ -40,6 +40,8 @@ Page {
         contentHeight: childrenRect.height + (20 * root.scaleFactor)
 
         Column {
+            spacing: 5* root.scaleFactor
+
             onHeightChanged: {
                 flicker.contentHeight = height + (20 * root.scaleFactor)
             }
@@ -64,7 +66,7 @@ Page {
 
 
             Item {
-                height:20* root.scaleFactor
+                height:15* root.scaleFactor
                 width: parent.width - (20 * root.scaleFactor)
             }
 
@@ -73,7 +75,6 @@ Page {
                 x: 5 *  root.scaleFactor
                 onClicked: {
                     console.log('Generating new key')
-                    //console.log(settings.keygen());
                     showConfirmation('Generate New Key',
                                      'Yes',
                                      'No',
@@ -81,7 +82,8 @@ Page {
                                      Icons.warning,
                                      function() {
                                          console.log('Generate New SSH Key');
-                                         settings.keygen();}
+                                         settings.keygen();
+                                         pubKey.text = settings.readPubKey();}
                                      )
                 }
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -90,7 +92,7 @@ Page {
             }
 
             Item {
-                height:20* root.scaleFactor
+                height:15* root.scaleFactor
                 width: parent.width - (20 * root.scaleFactor)
             }
 
@@ -99,6 +101,7 @@ Page {
             }
 
             TextInput {
+                id: pubKey
                 text: settings.readPubKey()
                 x: 5 *  root.scaleFactor
                 width: parent.width - (20 * root.scaleFactor)
@@ -114,7 +117,9 @@ Page {
             Button {
                 text: 'Copy to clipboard'
                 onClicked: {
-                    console.log('TODO Copy to clipboard')
+                    pubKey.selectAll();
+                    pubKey.copy();
+                    pubKey.select(0,0);
                 }
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: parent.width - (20 * root.scaleFactor)
@@ -122,7 +127,7 @@ Page {
             }
 
             Item {
-                height:20* root.scaleFactor
+                height:15* root.scaleFactor
                 width: parent.width - (20 * root.scaleFactor)
             }
 

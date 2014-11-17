@@ -13,16 +13,15 @@
     <action system="true">run_native</action>
     <author>Benoît HERVIER</author>
     <asset entry="true" type="Qnx/Elf" path="${BUILD_DIR}/sparkleNotes">sparkleNotes</asset>
-    <asset path="/home/khertan/Projects/libgit2/libgit2.so.21">lib/libgit2.so.21</asset>
-    <asset path="/home/khertan/Projects/libssh2/libssh2.so">lib/libssh2.so</asset>
-    <asset path="/home/khertan/Projects/sparkleNotes/ownnotes.png">ownnotes.png</asset>
-    <asset path="${BUILD_DIR}/sparkleNotes" entry="true" type="Qnx/Elf">sparkleNotes</asset>
-    <asset path="/home/khertan/Projects/libgit2/libgit2.so.21" type="Qnx/Elf">lib/libgit2.so.21</asset>
-    <asset path="/home/khertan/Projects/libssh2/libssh2.so" type="Qnx/Elf">lib/libssh2.so</asset>
+    <asset path="${LIBGIT2_DIR}/libgit2.so.21">lib/libgit2.so.21</asset>
+    <asset path="${LIBSSH2_DIR}/libssh2.so">lib/libssh2.so</asset>
+    <asset path="${PROJECT_PATH}/ownnotes.png">ownnotes.png</asset>
+    <asset entry="true" path="${PROJECT_PATH}/ssh-keygen" type="Qnx/Elf">bin/ssh-keygen</asset>
     <env var="LD_LIBRARY_PATH" value="/accounts/devuser/qt/lib:$LD_LIBRARY_PATH:app/native/lib"/>
     <env var="QML2_IMPORT_PATH" value="/accounts/devuser/qt/qml:$QML2_IMPORT_PATH"/>
     <env var="QML_IMPORT_PATH" value="/accounts/devuser/qt/imports:$QML_IMPORT_PATH"/>
     <env var="QT_PLUGIN_PATH" value="/accounts/devuser/qt/plugins:$QT_PLUGIN_PATH"/>
+    <env var="PATH" value="app/native/bin:$PATH"/>
     <icon>
         <image>ownnotes.png</image>
     </icon>

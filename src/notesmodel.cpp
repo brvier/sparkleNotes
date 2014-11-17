@@ -119,6 +119,7 @@ int NotesModel::push() {
         const git_error *err = giterr_last();
         if (err != NULL)
             qDebug() << QString::number(err->klass) + "\t" + QString(err->message);
+        emit this->error(QString(err->message));
         giterr_clear();
         git_remote_free(remote);
         git_repository_free(repo);
@@ -133,8 +134,9 @@ int NotesModel::pull() {
     git_remote *remote = NULL;
     git_merge_head *merge_head = NULL;
 
-    if (!QSettings().value("gitRemoteUrl").isValid())
-        return false;
+    if (!QSettings().value("gitRemoteUrl").isValid()) {
+        qDebug() << "gitRemoteUrl setting invalid";
+        return false; }
 
     if (QSettings().value("gitRemoteUrl") == "")
         return false;
@@ -251,6 +253,7 @@ int NotesModel::pull() {
         const git_error *err = giterr_last();
         if (err != NULL)
             qDebug() << QString::number(err->klass) + "\t" + QString(err->message);
+        emit this->error(QString(err->message));
         giterr_clear();
         git_merge_head_free(merge_head);
         git_remote_free(remote);
@@ -469,6 +472,7 @@ QString Note::setCategory(QString cat) const
 uint Note::datetime() const
 {
     return QFileInfo(m_path).lastModified().toTime_t();
+//    return QFileInfo(m_path).lastModified().toTime_t();
 }
 
 QString Note::path() const

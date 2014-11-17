@@ -18,7 +18,7 @@ ButtonArea {
     canHighlight: false
 
     height: 80 * root.scaleFactor
-    width: height
+    width: 80 * root.scaleFactor
 
     Icon {
         id: icon

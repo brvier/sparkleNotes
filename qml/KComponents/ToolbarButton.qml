@@ -5,11 +5,10 @@ import 'icons/icons.js' as Icons
 Rectangle {
     id: toolbarButton
 
-    //property alias color: iconMenuItem.color
+    property alias iconColor: iconMenuItem.color
     //property alias text: iconMenuItem.text
     property string text: ''
     property alias icon: iconMenuItem.icon
-
     signal clicked()
 
     width: iconMenuItem.width
@@ -32,6 +31,6 @@ Rectangle {
         color: Theme.colors.toolbarText
         transparent: true
         enabled: parent.enabled
-        onClicked: toolbarButton.clicked()        
+        onClicked: toolbarButton.clicked()
     }
 }

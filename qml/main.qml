@@ -36,7 +36,7 @@ Window {
         var index = -1;
         for (var i=0; i<children.length; i++) {
             if (children[i] === page) {
-                index = i;                
+                index = i;
                 break;
             }
         }
@@ -53,6 +53,7 @@ Window {
 
     //showConfirmation("Are you sure ?", "Yes", "No", "Click on yes will close that dialog, and confirm that you are sure.")
     function showConfirmation(title, affirmative, negative, description, icon, callback) {
+        Qt.inputMethod.hide();
         loadPage('KComponents/Confirmation.qml', {
                      title: title,
                      affirmativeAction: affirmative,
@@ -99,7 +100,6 @@ Window {
 
     function setCategoryDialog(path, category) {
         Qt.inputMethod.hide();
-
         loadPage('KComponents/TextInputDialog.qml', {
                      title: 'Set category',
                      placeholderText: category,
@@ -156,54 +156,57 @@ Window {
 
         root.loadPageInProgress = true;
         component.createObject(root, properties);
+        Qt.inputMethod.hide();
 
     }
 
     function milisecondsToString(miliseconds) {
-        try {
-            //get different date time initials.
-            var myDate = new Date();
-            var difference_ms = myDate.getTime() - miliseconds * 1000;
-            //take out milliseconds
-            difference_ms = difference_ms / 1000;
-            var seconds = Math.floor(difference_ms % 60);
-            difference_ms = difference_ms / 60;
-            var minutes = Math.floor(difference_ms % 60);
-            difference_ms = difference_ms / 60;
-            var hours = Math.floor(difference_ms % 24);
-            difference_ms = difference_ms / 24;
-            var days = Math.floor(difference_ms % 7);
-            difference_ms = difference_ms / 7;
-            var weeks = Math.floor(difference_ms);
+        if (miliseconds > 0) {
+            try {
+                //get different date time initials.
+                var myDate = new Date();
+                var difference_ms = myDate.getTime()/1000.0 - miliseconds;
+                //take out milliseconds
+                difference_ms = difference_ms / 1000;
+                var seconds = Math.floor(difference_ms % 60);
+                difference_ms = difference_ms / 60;
+                var minutes = Math.floor(difference_ms % 60);
+                difference_ms = difference_ms / 60;
+                var hours = Math.floor(difference_ms % 24);
+                difference_ms = difference_ms / 24;
+                var days = Math.floor(difference_ms % 7);
+                difference_ms = difference_ms / 7;
+                var weeks = Math.floor(difference_ms);
 
-            //remove weeks if it exceeds the month limit ie. 4weeks+2days.
-            var months = 0;
-            if ((weeks == 4 && days >= 2) || (weeks > 4)) {
-                difference_ms = difference_ms * 7;
-                days = Math.floor(difference_ms % 30);
-                difference_ms = difference_ms / 30;
-                months = Math.floor(difference_ms);
-                weeks = 0;
+                //remove weeks if it exceeds the month limit ie. 4weeks+2days.
+                var months = 0;
+                if ((weeks == 4 && days >= 2) || (weeks > 4)) {
+                    difference_ms = difference_ms * 7;
+                    days = Math.floor(difference_ms % 30);
+                    difference_ms = difference_ms / 30;
+                    months = Math.floor(difference_ms);
+                    weeks = 0;
+                }
+                //check and return the largest value of date time initialized.
+                if (months >= 1) {
+                    return months + "M ago";
+                } else if (weeks != 0) {
+                    return weeks + "W ago";
+                } else if (days != 0) {
+                    return days + "d ago";
+                } else if (hours != 0) {
+                    return hours + "h ago";
+                } else if (minutes != 0) {
+                    return minutes + "m ago";
+                } else if (seconds != 0) {
+                    return seconds + "s ago";
+                }
+            } catch (e) {
+                console.debug(e);
+                return 'Now';
             }
-            //check and return the largest value of date time initialized.
-            if (months > 0) {
-                return months + "M ago";
-            } else if (weeks != 0) {
-                return weeks + "W ago";
-            } else if (days != 0) {
-                return days + "d ago";
-            } else if (hours != 0) {
-                return hours + "h ago";
-            } else if (minutes != 0) {
-                return minutes + "m ago";
-            } else if (seconds != 0) {
-                return seconds + "s ago";
-            }
-        } catch (e) {
             return 'Now';
-            alert(e);
         }
-        return 'Now';
     }
 
 
@@ -293,7 +296,6 @@ Window {
             ToolbarButton {
                 id:catTool
                 icon: Icons.list
-                //text: 'Plus'
                 onClicked: {
                     showCategoriesList();
                 }
@@ -301,14 +303,18 @@ Window {
 
             ToolbarButton {
                 icon: Icons.plus
+                iconColor: '#0092CC'
+                //anchors.right: menuTool.left
                 anchors.left: catTool.right
-                //text: 'Plus'
+                //anchors.rightMargin: parent.width/2 - (catTool.width*2)
+                anchors.leftMargin:(parent.width - (menuTool.width*3)) / 2
                 onClicked: {
                     notesModel.create();
                 }
             }
 
             ToolbarButton {
+                id: menuTool
                 icon: Icons.menu
                 anchors.right: parent.right
                 onClicked: {
