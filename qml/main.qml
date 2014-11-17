@@ -17,7 +17,7 @@ Window {
     color: '#000000'
     Connections {
         target: notesModel
-        onError: showError('Oups', text)
+        onError: showError('Oups', data)
     }
 
     FontLoader {
