@@ -10,3 +10,7 @@ not yet implemented, use this at your own risk, nuclear winter can happen ...
 The code is licenced under GPLv3, except most components located in
 src/qml/KComponents which come from the touch reference UI of gPodder and are a
 bit modified. I need to clean up the licence mess ...
+
+Running on Blackberry 10
+------------------------
+![BB10_Screenshots](https://raw.githubusercontent.com/khertan/sparkleNotes/master/bb10_screenshot.png)
